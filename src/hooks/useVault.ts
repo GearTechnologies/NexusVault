@@ -226,13 +226,19 @@ export function useVault() {
 
   /**
    * Fetches a vault index from Storacha by CID and populates the store.
+   * Skips entries that already exist in the store to prevent duplicates.
    */
   const loadVaultIndex = useCallback(
     async (cid: string) => {
       setLoading(true);
       try {
         const loaded = await fetchVaultIndex(cid);
-        loaded.forEach((e) => addEntry(e));
+        const existingIds = new Set(
+          useVaultStore.getState().entries.map((e) => e.id)
+        );
+        loaded
+          .filter((e) => !existingIds.has(e.id))
+          .forEach((e) => addEntry(e));
         setVaultIndexCid(cid);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load vault index');

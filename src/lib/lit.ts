@@ -186,6 +186,9 @@ export async function setupSocialRecovery(
   });
 
   return {
+    // NOTE (hackathon): In production, pkpPublicKey would come from a Lit PKP
+    // minting transaction (lit-protocol/pkp-nfts). Here it's a deterministic
+    // mock identifier derived from the recoveryId for demo purposes.
     pkpPublicKey: `pkp-${recoveryId}-${threshold}of${guardianAddresses.length}`,
     recoveryId,
   };
@@ -222,6 +225,9 @@ export async function deployDeadMansSwitchAction(
     })();
   `;
 
+  // NOTE (hackathon): In production, the Lit Action code would be uploaded to
+  // IPFS and its content-addressed CID used as the `actionCid`. Here we derive
+  // a deterministic mock CID for demo purposes.
   const actionCid = `bafybeig${btoa(`${heirAddress}-${vaultCid}-${Date.now()}`)
     .replace(/[^a-z0-9]/gi, '')
     .substring(0, 32)}`;

@@ -133,7 +133,9 @@ export async function delegateReadAccess(
     throw new Error(`Failed to archive delegation: ${String(archived.error)}`);
   }
 
-  // archived.ok is Uint8Array
+  // `cid` is accepted as a parameter for API consistency and future filtering.
+  // Currently, Storacha delegations are issued at the space level (space/blob/*)
+  // rather than per-CID, which is standard UCAN practice.
   void cid;
   return btoa(String.fromCharCode(...(archived.ok as Uint8Array)));
 }
