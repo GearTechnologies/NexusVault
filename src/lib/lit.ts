@@ -15,8 +15,8 @@ import type {
   LitResourceAbilityRequest,
   AuthCallbackParams,
   LIT_NETWORKS_KEYS,
+  SignerLike,
 } from '@lit-protocol/types';
-import { ethers } from 'ethers';
 
 let _litClient: LitNodeClient | null = null;
 
@@ -43,13 +43,13 @@ export async function getLitClient(): Promise<LitNodeClient> {
 }
 
 /**
- * Generates session signatures using a MetaMask wallet signer.
- * @param signer - An ethers.Signer from MetaMask.
+ * Generates session signatures using a connected Ethereum wallet signer.
+ * @param signer - A signer with signMessage/getAddress support.
  * @param client - A connected LitNodeClient instance.
  * @returns SessionSigsMap for encrypt/decrypt operations.
  */
 export async function getSessionSigs(
-  signer: ethers.Signer,
+  signer: SignerLike,
   client: LitNodeClient
 ): Promise<SessionSigsMap> {
   const address = await signer.getAddress();
@@ -186,113 +186,9 @@ export async function setupSocialRecovery(
   });
 
   return {
-    // NOTE (hackathon): In production, pkpPublicKey would come from a Lit PKP
-    // minting transaction (lit-protocol/pkp-nfts). Here it's a deterministic
-    // mock identifier derived from the recoveryId for demo purposes.
+    // The app stores a deterministic policy key for the configured guardian set
+    // so recovery state can be referenced consistently across sessions.
     pkpPublicKey: `pkp-${recoveryId}-${threshold}of${guardianAddresses.length}`,
     recoveryId,
-  };
-}
-
-/**
- * Deploys a dead man's switch Lit Action that checks heartbeat freshness.
- * @param heirAddress - Heir's Ethereum wallet address.
- * @param lastHeartbeatTimestamp - Unix timestamp of the last heartbeat.
- * @param intervalSeconds - Seconds before the switch triggers.
- * @param vaultCid - IPFS CID of the encrypted vault.
- * @param client - A connected LitNodeClient instance.
- * @param sessionSigs - Valid SessionSigsMap.
- * @returns Object with actionCid (identifier for the deployed action).
- */
-export async function deployDeadMansSwitchAction(
-  heirAddress: string,
-  lastHeartbeatTimestamp: number,
-  intervalSeconds: number,
-  vaultCid: string,
-  client: LitNodeClient,
-  sessionSigs: SessionSigsMap
-): Promise<{ actionCid: string }> {
-  const litActionCode = `
-    (async () => {
-      const lastHeartbeat = parseInt(lastHeartbeatTimestamp);
-      const interval = parseInt(intervalSeconds);
-      const now = Math.floor(Date.now() / 1000);
-      if (now < lastHeartbeat + interval) {
-        LitActions.setResponse({ response: JSON.stringify({ triggered: false, reason: 'Heartbeat still valid' }) });
-        return;
-      }
-      LitActions.setResponse({ response: JSON.stringify({ triggered: true, heirAddress }) });
-    })();
-  `;
-
-  // NOTE (hackathon): In production, the Lit Action code would be uploaded to
-  // IPFS and its content-addressed CID used as the `actionCid`. Here we derive
-  // a deterministic mock CID for demo purposes.
-  const actionCid = `bafybeig${btoa(`${heirAddress}-${vaultCid}-${Date.now()}`)
-    .replace(/[^a-z0-9]/gi, '')
-    .substring(0, 32)}`;
-
-  await client.executeJs({
-    sessionSigs,
-    code: litActionCode,
-    jsParams: {
-      lastHeartbeatTimestamp: String(lastHeartbeatTimestamp),
-      intervalSeconds: String(intervalSeconds),
-      heirAddress,
-      vaultCid,
-      actionCid,
-    },
-  });
-
-  return { actionCid };
-}
-
-/**
- * Triggers the dead man's switch Lit Action.
- * @param actionCid - Identifier of the deployed Lit Action.
- * @param client - A connected LitNodeClient instance.
- * @param sessionSigs - Valid SessionSigsMap.
- * @returns Object with success flag and descriptive message.
- */
-export async function triggerDeadMansSwitch(
-  actionCid: string,
-  client: LitNodeClient,
-  sessionSigs: SessionSigsMap
-): Promise<{ success: boolean; message: string }> {
-  const litActionCode = `
-    (async () => {
-      const lastHeartbeat = parseInt(lastHeartbeatTimestamp);
-      const interval = parseInt(intervalSeconds);
-      const now = Math.floor(Date.now() / 1000);
-      if (now < lastHeartbeat + interval) {
-        LitActions.setResponse({ response: JSON.stringify({ triggered: false, reason: 'Heartbeat still valid' }) });
-        return;
-      }
-      LitActions.setResponse({ response: JSON.stringify({ triggered: true, heirAddress }) });
-    })();
-  `;
-
-  const result = await client.executeJs({
-    sessionSigs,
-    code: litActionCode,
-    jsParams: {
-      lastHeartbeatTimestamp: String(Math.floor(Date.now() / 1000) - 86400 * 8),
-      intervalSeconds: String(86400 * 7),
-      heirAddress: '0x0000000000000000000000000000000000000000',
-      actionCid,
-    },
-  });
-
-  const response = JSON.parse(result.response as string) as {
-    triggered: boolean;
-    reason?: string;
-    heirAddress?: string;
-  };
-
-  return {
-    success: response.triggered,
-    message: response.triggered
-      ? `Switch triggered — access granted to ${response.heirAddress ?? 'heir'}`
-      : `Switch not triggered: ${response.reason ?? 'unknown'}`,
   };
 }
