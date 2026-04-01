@@ -5,6 +5,8 @@
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useVaultStore } from '../store/vault';
+import { useWallet } from './useWallet';
+import { useWalletSigner } from './useWalletSigner';
 import {
   getLitClient,
   getSessionSigs,
@@ -26,8 +28,8 @@ import type { ContactEntry } from '../lib/did';
  * index on Storacha, toggle consent, and handle UCAN delegations.
  */
 export function useVault() {
-  const signer = useVaultStore((s) => s.signer);
-  const walletAddress = useVaultStore((s) => s.walletAddress);
+  const { walletAddress } = useWallet();
+  const { signer } = useWalletSigner();
   const entries = useVaultStore((s) => s.entries);
   const addEntry = useVaultStore((s) => s.addEntry);
   const removeEntry = useVaultStore((s) => s.removeEntry);
@@ -53,7 +55,9 @@ export function useVault() {
     ): Promise<
       Omit<VaultEntryMeta, 'id' | 'createdAt' | 'consentEnabled' | 'delegations'>
     > => {
-      if (!signer || !walletAddress) throw new Error('Wallet not connected');
+      if (!walletAddress) {
+        throw new Error('Connect an Ethereum wallet before saving vault data.');
+      }
 
       const client = await getLitClient();
       const { ciphertext, dataToEncryptHash } = await encryptWithWallet(
@@ -181,7 +185,14 @@ export function useVault() {
    */
   const decryptEntry = useCallback(
     async (id: string): Promise<string> => {
-      if (!signer || !walletAddress) throw new Error('Wallet not connected');
+      if (!walletAddress) {
+        throw new Error('Connect an Ethereum wallet before decrypting entries.');
+      }
+      if (!signer) {
+        throw new Error(
+          'Wallet client is still initializing. Retry in a moment.'
+        );
+      }
       setLoading(true);
       try {
         const entry = entries.find((e) => e.id === id);
