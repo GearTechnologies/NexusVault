@@ -2,8 +2,7 @@
  * ConnectWallet — shown when no wallet is connected.
  */
 
-import { useState } from 'react';
-import { useWallet } from '../hooks/useWallet';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 function VaultIcon() {
   return (
@@ -29,23 +28,6 @@ function VaultIcon() {
 
 /** Centred card shown when the wallet is not connected. */
 export function ConnectWallet() {
-  const { connect } = useWallet();
-  const [connecting, setConnecting] = useState(false);
-  const [metaMaskMissing, setMetaMaskMissing] = useState(false);
-
-  const handleConnect = async () => {
-    if (!window.ethereum) {
-      setMetaMaskMissing(true);
-      return;
-    }
-    setConnecting(true);
-    try {
-      await connect();
-    } finally {
-      setConnecting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="rounded-xl border border-gray-700 bg-gray-800 p-10 max-w-md w-full text-center space-y-6">
@@ -59,42 +41,19 @@ export function ConnectWallet() {
           </p>
         </div>
 
-        {metaMaskMissing && (
-          <div
-            role="alert"
-            className="p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-300 text-sm"
-          >
-            MetaMask is not installed. Please install the{' '}
-            <a
-              href="https://metamask.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline text-red-200"
+        <ConnectButton.Custom>
+          {({ mounted, openConnectModal }) => (
+            <button
+              onClick={openConnectModal}
+              disabled={!mounted}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
+              aria-label="Connect Ethereum wallet"
+              type="button"
             >
-              MetaMask extension
-            </a>{' '}
-            and refresh this page.
-          </div>
-        )}
-
-        <button
-          onClick={handleConnect}
-          disabled={connecting}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
-          aria-label="Connect MetaMask wallet"
-        >
-          {connecting ? (
-            <>
-              <span
-                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-                aria-hidden="true"
-              />
-              Connecting…
-            </>
-          ) : (
-            'Connect Wallet'
+              {mounted ? 'Connect Wallet' : 'Loading wallet options…'}
+            </button>
           )}
-        </button>
+        </ConnectButton.Custom>
       </div>
     </div>
   );
