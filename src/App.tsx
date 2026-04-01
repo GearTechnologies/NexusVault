@@ -12,10 +12,10 @@ import { SharingPage } from './pages/SharingPage';
 import { GraphPage } from './pages/GraphPage';
 import { DeadMansPage } from './pages/DeadMansPage';
 import { Dashboard } from './components/Dashboard';
-import { useVaultStore } from './store/vault';
+import { useWallet } from './hooks/useWallet';
 
 function RequireWallet({ children }: { children: ReactNode }) {
-  const walletAddress = useVaultStore((s) => s.walletAddress);
+  const { walletAddress } = useWallet();
   if (!walletAddress) {
     return <Navigate to="/" replace />;
   }

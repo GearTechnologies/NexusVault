@@ -5,6 +5,7 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useVaultStore } from '../../store/vault';
+import { useWallet } from '../../hooks/useWallet';
 import {
   buildDIDDocument,
   exportDIDDocument,
@@ -17,7 +18,7 @@ const PLATFORMS = ['twitter', 'farcaster', 'lens'];
 
 /** Portable social graph management with DID document export/import. */
 export function SocialGraphExport() {
-  const walletAddress = useVaultStore((s) => s.walletAddress);
+  const { walletAddress } = useWallet();
   const contacts = useVaultStore((s) => s.contacts);
   const addContact = useVaultStore((s) => s.addContact);
   const removeContact = useVaultStore((s) => s.removeContact);
