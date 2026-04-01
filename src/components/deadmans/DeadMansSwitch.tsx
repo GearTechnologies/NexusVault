@@ -1,15 +1,10 @@
 /**
- * DeadMansSwitch — configure, arm, and manage the digital inheritance switch.
+ * DeadMansSwitch — configure, arm, and monitor a live heartbeat policy.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useVaultStore } from '../../store/vault';
-import {
-  getLitClient,
-  getSessionSigs,
-  deployDeadMansSwitchAction,
-  triggerDeadMansSwitch,
-} from '../../lib/lit';
+import { useWallet } from '../../hooks/useWallet';
 
 const INTERVAL_OPTIONS = [
   { days: 7, label: '7 days' },
@@ -25,12 +20,10 @@ function formatRelativeTime(ts: number): string {
   return `${Math.floor(diff / 86400)} days ago`;
 }
 
-/** Full dead man's switch configuration and status dashboard. */
+/** Heartbeat-based inheritance policy dashboard. */
 export function DeadMansSwitch() {
-  const signer = useVaultStore((s) => s.signer);
-  const walletAddress = useVaultStore((s) => s.walletAddress);
+  const { walletAddress } = useWallet();
   const switchArmed = useVaultStore((s) => s.switchArmed);
-  const switchActionCid = useVaultStore((s) => s.switchActionCid);
   const heirAddress = useVaultStore((s) => s.heirAddress);
   const lastHeartbeat = useVaultStore((s) => s.lastHeartbeat);
   const heartbeatIntervalDays = useVaultStore((s) => s.heartbeatIntervalDays);
@@ -39,73 +32,67 @@ export function DeadMansSwitch() {
   const armSwitch = useVaultStore((s) => s.armSwitch);
   const disarmSwitch = useVaultStore((s) => s.disarmSwitch);
   const recordHeartbeat = useVaultStore((s) => s.recordHeartbeat);
-  const setLoading = useVaultStore((s) => s.setLoading);
   const setError = useVaultStore((s) => s.setError);
 
   const [inputHeir, setInputHeir] = useState('');
   const [heirError, setHeirError] = useState('');
   const [intervalDays, setIntervalDays] = useState(7);
-  const [triggerResult, setTriggerResult] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [checkedIn, setCheckedIn] = useState(false);
 
   const validateAddress = (addr: string) => /^0x[0-9a-fA-F]{40}$/.test(addr);
 
-  const handleDeploy = async () => {
+  const releaseEligible = useMemo(() => {
+    if (!lastHeartbeat) return false;
+    return (
+      Math.floor(Date.now() / 1000) >=
+      lastHeartbeat + heartbeatIntervalDays * 86400
+    );
+  }, [heartbeatIntervalDays, lastHeartbeat]);
+
+  const handleArmSwitch = () => {
+    if (!walletAddress) {
+      setError('Connect an Ethereum wallet before arming the switch.');
+      return;
+    }
+    if (!vaultIndexCid) {
+      setError('Create and save at least one vault entry before arming the switch.');
+      return;
+    }
     if (!validateAddress(inputHeir)) {
       setHeirError('Must be a valid 0x Ethereum address (42 chars)');
       return;
     }
-    if (!signer || !walletAddress) {
-      setError('Wallet not connected');
-      return;
-    }
-    setLoading(true);
+
+    configureSwitch(inputHeir, intervalDays);
+    armSwitch();
+    recordHeartbeat();
     setHeirError('');
-    try {
-      configureSwitch(inputHeir, intervalDays);
-      const client = await getLitClient();
-      const sessionSigs = await getSessionSigs(signer, client);
-      const now = Math.floor(Date.now() / 1000);
-      const result = await deployDeadMansSwitchAction(
-        inputHeir,
-        now,
-        intervalDays * 86400,
-        vaultIndexCid ?? 'no-vault-cid',
-        client,
-        sessionSigs
-      );
-      armSwitch(result.actionCid);
-      recordHeartbeat();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Deploy failed');
-    } finally {
-      setLoading(false);
-    }
+    setStatusMessage(
+      'Heartbeat policy armed. Eligibility will update automatically if check-ins are missed.'
+    );
   };
 
   const handleCheckIn = () => {
     recordHeartbeat();
     setCheckedIn(true);
+    setStatusMessage('Heartbeat recorded successfully.');
     setTimeout(() => setCheckedIn(false), 3000);
   };
 
-  const handleTrigger = async () => {
-    if (!signer || !switchActionCid) return;
-    setLoading(true);
-    try {
-      const client = await getLitClient();
-      const sessionSigs = await getSessionSigs(signer, client);
-      const result = await triggerDeadMansSwitch(
-        switchActionCid,
-        client,
-        sessionSigs
-      );
-      setTriggerResult(result.message);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Trigger failed');
-    } finally {
-      setLoading(false);
+  const handleEvaluateRelease = () => {
+    if (!switchArmed || !lastHeartbeat || !heirAddress) {
+      return;
     }
+
+    if (releaseEligible) {
+      setStatusMessage(
+        `Release window is open for heir ${heirAddress}. The heartbeat interval has expired.`
+      );
+      return;
+    }
+
+    setStatusMessage('Heartbeat is still valid. Release conditions have not been met.');
   };
 
   const nextHeartbeatDays =
@@ -125,14 +112,22 @@ export function DeadMansSwitch() {
 
   return (
     <div className="space-y-6">
-      {/* Warning banner */}
       {switchArmed && (
-        <div className="rounded-lg border border-amber-700 bg-amber-900/20 p-4">
-          <p className="text-amber-300 text-sm">
-            ⚠️ If you do not check in within{' '}
-            <strong>{heartbeatIntervalDays} days</strong>, your designated heir{' '}
-            <strong>{heirAddress ? shortAddr(heirAddress) : '—'}</strong> will
-            receive access to the selected vault sections.
+        <div
+          className={`rounded-lg p-4 ${
+            releaseEligible
+              ? 'border border-red-700 bg-red-900/20'
+              : 'border border-amber-700 bg-amber-900/20'
+          }`}
+        >
+          <p
+            className={`text-sm ${
+              releaseEligible ? 'text-red-200' : 'text-amber-300'
+            }`}
+          >
+            {releaseEligible
+              ? `Heartbeat expired. The configured release window for ${heirAddress ? shortAddr(heirAddress) : 'your heir'} is now open.`
+              : `If you do not check in within ${heartbeatIntervalDays} days, ${heirAddress ? shortAddr(heirAddress) : 'your heir'} becomes eligible under this policy.`}
           </p>
         </div>
       )}
@@ -158,7 +153,9 @@ export function DeadMansSwitch() {
               aria-label="Heir wallet address"
             />
             {heirError && (
-              <p className="text-xs text-red-400 mt-1" role="alert">{heirError}</p>
+              <p className="text-xs text-red-400 mt-1" role="alert">
+                {heirError}
+              </p>
             )}
           </div>
 
@@ -173,35 +170,27 @@ export function DeadMansSwitch() {
               className="bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500"
               aria-label="Heartbeat interval"
             >
-              {INTERVAL_OPTIONS.map((o) => (
-                <option key={o.days} value={o.days}>{o.label}</option>
+              {INTERVAL_OPTIONS.map((option) => (
+                <option key={option.days} value={option.days}>
+                  {option.label}
+                </option>
               ))}
             </select>
           </div>
 
-          <div>
-            <p className="text-sm text-gray-400 mb-2">Vault Sections to Inherit</p>
-            <div className="space-y-2">
-              {['passwords', 'files', 'notes', 'contacts'].map((section) => (
-                <label key={section} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="rounded border-gray-600 bg-gray-900 text-indigo-500 focus:ring-indigo-500"
-                    aria-label={`Include ${section} in inheritance`}
-                  />
-                  <span className="text-sm text-gray-300 capitalize">{section}</span>
-                </label>
-              ))}
-            </div>
+          <div className="rounded-lg border border-gray-700 bg-gray-900 p-4">
+            <p className="text-sm text-gray-300">
+              The switch arms a live heartbeat policy for your saved vault index
+              (`{vaultIndexCid ?? 'not saved yet'}`).
+            </p>
           </div>
 
           <button
-            onClick={() => void handleDeploy()}
+            onClick={handleArmSwitch}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
-            aria-label="Deploy dead man's switch"
+            aria-label="Arm dead man's switch"
           >
-            Deploy Switch
+            Arm Switch
           </button>
         </div>
       )}
@@ -209,7 +198,10 @@ export function DeadMansSwitch() {
       {switchArmed && (
         <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 space-y-5">
           <div className="flex items-center gap-3">
-            <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
+            <span
+              className={`w-3 h-3 rounded-full ${releaseEligible ? 'bg-red-400' : 'bg-emerald-400 animate-pulse'}`}
+              aria-hidden="true"
+            />
             <h3 className="text-lg font-semibold text-gray-50">Switch Armed</h3>
           </div>
 
@@ -244,14 +236,14 @@ export function DeadMansSwitch() {
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
               aria-label="Record heartbeat check-in"
             >
-              {checkedIn ? '✓ Checked In!' : 'Check In Now'}
+              {checkedIn ? 'Checked In' : 'Check In Now'}
             </button>
             <button
-              onClick={() => void handleTrigger()}
+              onClick={handleEvaluateRelease}
               className="border border-amber-700 hover:border-amber-500 text-amber-400 hover:text-amber-300 font-medium rounded-lg px-4 py-2 text-sm transition-colors"
-              aria-label="Trigger dead man's switch (demo)"
+              aria-label="Evaluate release eligibility"
             >
-              Trigger Switch (Demo)
+              Evaluate Eligibility
             </button>
             <button
               onClick={disarmSwitch}
@@ -262,9 +254,9 @@ export function DeadMansSwitch() {
             </button>
           </div>
 
-          {triggerResult && (
+          {statusMessage && (
             <div className="bg-gray-900 border border-gray-700 rounded-lg p-3">
-              <p className="text-sm text-gray-300">{triggerResult}</p>
+              <p className="text-sm text-gray-300">{statusMessage}</p>
             </div>
           )}
         </div>
