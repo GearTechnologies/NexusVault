@@ -5,11 +5,13 @@
 import { useState } from 'react';
 import { useVaultStore } from '../../store/vault';
 import { getLitClient, getSessionSigs, setupSocialRecovery } from '../../lib/lit';
+import { useWallet } from '../../hooks/useWallet';
+import { useWalletSigner } from '../../hooks/useWalletSigner';
 
 /** Manages guardian addresses and the recovery threshold. */
 export function GuardianManager() {
-  const signer = useVaultStore((s) => s.signer);
-  const walletAddress = useVaultStore((s) => s.walletAddress);
+  const { walletAddress } = useWallet();
+  const { signer } = useWalletSigner();
   const guardians = useVaultStore((s) => s.guardians);
   const threshold = useVaultStore((s) => s.threshold);
   const recoveryId = useVaultStore((s) => s.recoveryId);
@@ -45,8 +47,12 @@ export function GuardianManager() {
   };
 
   const handleConfigureRecovery = async () => {
-    if (!signer || !walletAddress) {
-      setError('Wallet not connected');
+    if (!walletAddress) {
+      setError('Connect an Ethereum wallet before configuring recovery.');
+      return;
+    }
+    if (!signer) {
+      setError('Wallet client is still initializing. Retry in a moment.');
       return;
     }
     if (guardians.length < 2) {
@@ -174,7 +180,8 @@ export function GuardianManager() {
         <div className="bg-emerald-900/30 border border-emerald-700 rounded-lg p-4 space-y-1">
           <p className="text-xs text-emerald-400 font-medium">Recovery configured!</p>
           <p className="text-xs text-gray-400">
-            PKP: <span className="font-mono">{pkpPublicKey.substring(0, 20)}…</span>
+            Policy key:{' '}
+            <span className="font-mono">{pkpPublicKey.substring(0, 20)}…</span>
           </p>
           <p className="text-xs text-gray-400">
             ID: <span className="font-mono">{recoveryId}</span>
