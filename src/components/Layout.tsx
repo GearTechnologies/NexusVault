@@ -2,6 +2,7 @@
  * Full-width dark-themed layout with sidebar navigation and top bar.
  */
 
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useVaultStore } from '../store/vault';
 import { useWallet } from '../hooks/useWallet';
@@ -19,7 +20,7 @@ export function Layout() {
   const isLoading = useVaultStore((s) => s.isLoading);
   const error = useVaultStore((s) => s.error);
   const setError = useVaultStore((s) => s.setError);
-  const { shortAddress, disconnect, isConnected } = useWallet();
+  const { isConnected } = useWallet();
 
   return (
     <div className="flex h-screen bg-gray-950 text-gray-50 overflow-hidden">
@@ -56,16 +57,7 @@ export function Layout() {
         <header className="h-16 bg-gray-900 border-b border-gray-700 flex items-center justify-between px-6">
           <div />
           {isConnected && (
-            <div className="flex items-center gap-4">
-              <span className="font-mono text-sm text-gray-300">{shortAddress}</span>
-              <button
-                onClick={disconnect}
-                className="border border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white rounded-lg px-4 py-2 text-sm transition-colors"
-                aria-label="Disconnect wallet"
-              >
-                Disconnect
-              </button>
-            </div>
+            <ConnectButton accountStatus="address" chainStatus="icon" showBalance={false} />
           )}
         </header>
 
