@@ -1,146 +1,298 @@
 # NexusVault
 
-NexusVault is a sovereign personal data layer that unifies encrypted file/credential storage, social recovery, a portable social graph, consent-based data sharing, and a cryptographic dead man's switch. The entire stack runs without any central server, using Lit Protocol for decentralised encryption and Storacha for UCAN-based IPFS storage. You own your data — no backend, no custodian.
+NexusVault is a sovereign collaboration vault for humans and autonomous agents.
+It combines Lit-enforced encryption and policy logic with Storacha-backed
+persistent memory, UCAN delegation, portable trust graphs, social recovery, and
+continuity automation.
 
----
+This submission is designed for the PL Genesis: Frontier of Collaboration
+Hackathon 2026, with explicit alignment to the Storacha and Lit Protocol tracks.
+
+Live deployment: https://nexus-vaultx.vercel.app/
+GitHub repository: https://github.com/GearTechnologies/NexusVault
+
+## Why NexusVault
+
+Most agent products are stateless, brittle, and custodial:
+
+- restart the app and context disappears
+- switch devices and preferences vanish
+- collaborate with other agents and sharing becomes ad hoc
+- lose a wallet and the whole system becomes inaccessible
+- grant access and it is often all-or-nothing instead of policy-based
+
+NexusVault fixes that by treating encrypted memory, coordination state, and
+continuity rules as first-class primitives.
+
+## Track Alignment
+
+### Storacha Track Alignment
+
+NexusVault directly maps to three Storacha challenge themes:
+
+1. Persistent Agent Memory
+
+- Agent profiles, knowledge packs, vault indexes, and workspace manifests are
+  published to Storacha.
+- The coordination state is content-addressed, portable, and reconstructable on
+  any device.
+
+2. Multi-Agent Coordination
+
+- NexusVault includes an agent registry, shared task queue, activity feed, and
+  UCAN-based delegation controls.
+- Agent A can prepare memory, Agent B can receive delegated access, and both can
+  operate from the same Storacha-backed coordination snapshot.
+
+3. Decentralized RAG Knowledge Base
+
+- Encrypted vault entries can be promoted into reusable knowledge packs.
+- Public manifests and content-addressed CIDs make the knowledge layer durable
+  and verifiable.
+
+### Lit Protocol Track Alignment
+
+NexusVault uses Lit for decentralized cryptographic control across the product:
+
+1. Encrypted data access
+
+- Vault payloads are encrypted client-side and only decryptable through Lit
+  access control conditions tied to the authorized wallet.
+
+2. Programmable policy execution
+
+- Lit Actions are used for social recovery orchestration and a resilience policy
+  simulation that scores operational readiness before handoff.
+
+3. Key continuity and automation
+
+- Guardian thresholds and the dead man’s switch create programmable, policy-led
+  continuity around high-value secrets and collaboration state.
+
+## Core Product Capabilities
+
+- Encrypted Vault
+  Store passwords, notes, files, and API keys with Lit-enforced decryption.
+- Storacha Memory Mesh
+  Publish workspace manifests, vault indexes, and social graph state to
+  Storacha.
+- UCAN Delegation
+  Mark assets as shareable and issue time-bound delegations to downstream DIDs.
+- Agent Coordination Board
+  Register agent identities, queue tasks, publish knowledge packs, and track
+  activity in one place.
+- Social Recovery
+  Configure a guardian quorum and verify recovery approvals.
+- Trust Graph Export
+  Export collaborators as a DID-linked social graph.
+- Dead Man’s Switch
+  Arm heartbeat-based continuity logic for inheritance or failover.
+- Crash Containment + Safer Deploy
+  Error boundary protection, SPA rewrites for Vercel, and lazy route loading.
 
 ## Architecture
 
+```text
+┌────────────────────────────────────────────────────────────────────┐
+│                            Browser UI                             │
+│                 React 18 + Vite + Zustand + Tailwind             │
+├────────────────────────────────────────────────────────────────────┤
+│ Command Center │ Coordination Mesh │ Vault │ Sharing │ Recovery  │
+├────────────────────────────────────────────────────────────────────┤
+│ Lit Protocol                                                   │
+│ - access-controlled encryption                                 │
+│ - session-based decryption                                     │
+│ - Lit Action policy execution                                  │
+│ - guardian / continuity logic                                  │
+├────────────────────────────────────────────────────────────────────┤
+│ Storacha                                                       │
+│ - encrypted blob uploads                                       │
+│ - vault index persistence                                      │
+│ - workspace manifest publishing                                │
+│ - UCAN delegation                                              │
+├────────────────────────────────────────────────────────────────────┤
+│ Wallet Layer                                                   │
+│ - RainbowKit + wagmi                                           │
+│ - signer-backed Lit sessions                                   │
+│ - DID-linked operator identity                                 │
+└────────────────────────────────────────────────────────────────────┘
 ```
-┌───────────────────────────────────────────────────────┐
-│                    Browser (React 18)                  │
-│                                                       │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────┐  │
-│  │  Zustand     │  │ Lit Protocol │  │ Storacha   │  │
-│  │  (persist)   │  │  v7 (Datil)  │  │  (UCAN)    │  │
-│  └──────────────┘  └──────────────┘  └────────────┘  │
-│         │                │                 │          │
-│         └────────────────┴─────────────────┘          │
-│                          │                             │
-│              MetaMask / ethers v6                     │
-│                (wallet signer)                        │
-└───────────────────────────────────────────────────────┘
-          │                         │
-  Lit Node Network           IPFS / Storacha
-  (threshold decrypt)        (encrypted blobs)
+
+## What Makes This Competitive
+
+### Technical Execution
+
+- Client-side encryption before decentralized storage
+- Route-level lazy loading to avoid shipping every flow on first paint
+- Dedicated coordination model for agents, tasks, knowledge packs, and manifests
+- Unified state model with persisted migrations
+- Vercel SPA rewrite support so nested routes do not break on refresh
+- Error boundary to prevent whole-app failure during demos
+
+### Impact / Usefulness
+
+- Useful for individuals, families, and teams managing sensitive digital assets
+- Gives AI agents durable memory without central backend lock-in
+- Enables safer collaboration through selective, time-bound delegation
+- Solves continuity problems around wallet loss, operator absence, and recovery
+
+### Completeness / Functionality
+
+- Deployed frontend
+- End-to-end flows for encrypt, decrypt, delegate, recover, export, publish
+- Hackathon demo path built directly into the Command Center and Coordination UI
+
+### Scalability / Future Potential
+
+- Content-addressed manifests can grow into multi-device sync and long-lived
+  memory replay
+- Knowledge packs can evolve into a fully decentralized RAG layer
+- Task queue + agent registry can back larger multi-agent orchestration systems
+
+### Innovation / Creativity
+
+- Blends vault security, inheritance, trust graphs, and agent memory into one
+  product
+- Treats continuity as part of collaboration, not a separate “backup” feature
+- Uses Storacha and Lit together as infrastructure for resilient coordination
+
+## Demo Walkthrough
+
+Recommended judge flow:
+
+1. Connect a wallet.
+2. Click `Load Demo Workspace` on the Command Center.
+3. Open `Coordination` and inspect:
+   agent registry, shared tasks, knowledge packs, and Lit policy scoring.
+4. Open `Vault` and add an encrypted secret.
+5. Open `UCAN Sharing` and mark the secret shareable.
+6. Issue a delegation to a recipient DID.
+7. Return to `Coordination` and publish a Storacha snapshot.
+8. Open `Recovery` and configure guardians.
+9. Open `Continuity` and arm the dead man’s switch.
+10. Open `Trust Graph` and export the social graph manifest.
+
+## Repository Structure
+
+```text
+src/
+  components/
+    coordination/     # agent registry, tasks, knowledge publishing
+    deadmans/         # heartbeat continuity controls
+    graph/            # trust graph export/import
+    recovery/         # guardian setup + recovery approvals
+    sharing/          # consent toggles + UCAN delegation UI
+    vault/            # encrypted asset creation and viewing
+  hooks/
+    useVault.ts       # encrypted vault CRUD and Storacha/Lit flows
+    useWorkspace.ts   # agent coordination, policy scoring, manifest publishing
+  lib/
+    lit.ts            # Lit client, sessions, encryption, Lit Actions
+    storacha.ts       # Storacha client, space readiness, upload, delegation
+    did.ts            # DID document export/import helpers
+  store/
+    vault.ts          # persisted app state
+  types/
+    nexus.ts          # shared types for agents, tasks, knowledge packs
 ```
 
----
+## Environment Variables
 
-## Prerequisites
-
-- **Node.js 20+**
-- **MetaMask** browser extension
-- **Storacha account** — sign up at [storacha.network](https://storacha.network)
-
----
-
-## Environment Setup
+Copy `.env.example` to `.env` and fill in the values you want to use:
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in your values:
+| Variable | Purpose |
+| --- | --- |
+| `VITE_LIT_NETWORK` | Lit network name. The current browser demo defaults to `datil-test`. |
+| `VITE_STORACHA_EMAIL` | Email used for the Storacha browser login flow. |
+| `VITE_STORACHA_APP_NAME` | App name shown during Storacha auth. |
+| `VITE_STORACHA_SPACE_NAME` | Auto-created Storacha space name when no active space exists. |
+| `VITE_STORACHA_SPACE_DID` | Optional explicit space DID to use instead of auto-selection. |
+| `VITE_STORACHA_AUTO_CREATE_SPACE` | Set to `false` if you want to manage spaces manually. |
+| `VITE_HEARTBEAT_INTERVAL_DAYS` | Default continuity interval for the dead man’s switch. |
+| `LIT_API_KEY` | Reserved for extended Lit integrations and hosted flows. |
 
-```
-VITE_LIT_NETWORK=datil-test          # or datil for mainnet
-VITE_STORACHA_EMAIL=your@email.com   # Storacha account email
-VITE_HEARTBEAT_INTERVAL_DAYS=7       # default dead man's interval
-```
+## Local Development
 
----
-
-## Installation
+Install dependencies:
 
 ```bash
 npm install
 ```
 
----
-
-## Dev Server
+Start the app:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Typecheck:
 
----
+```bash
+npm run typecheck
+```
 
-## Production Build
+Build for production:
 
 ```bash
 npm run build
-npm run preview
 ```
 
----
+## Storacha Notes
 
-## Workflow Guide
+- Storacha is public, so NexusVault only uploads encrypted vault payloads or
+  non-secret coordination manifests.
+- On first use, the browser client may trigger the Storacha email login flow.
+- If no active space is selected, NexusVault can automatically create one using
+  `VITE_STORACHA_SPACE_NAME`.
 
-### Step 1 — Connect wallet + create a password vault entry
+## Security Model
 
-1. Click **Connect Wallet** — approve MetaMask connection.
-2. Navigate to **Vault** → **Add Entry**.
-3. Select type **Password**, enter a label, username, and password.
-4. Click **Save Entry** — Lit Protocol encrypts the payload and Storacha pins the ciphertext to IPFS.
-5. Your entry appears as a card with a masked value (`••••••••`).
-6. Click **Decrypt** to retrieve the plaintext via Lit session signatures.
+- Secrets are encrypted before upload.
+- Decryption requires a Lit session generated from the connected wallet.
+- Delegations are time-bound and scoped through UCANs.
+- Recovery requires guardian approvals.
+- Continuity logic is separated from raw ciphertext storage.
 
-### Step 2 — Configure social recovery with 2-of-3 guardians
+## Deployment
 
-1. Navigate to **Recovery**.
-2. Add three guardian Ethereum addresses (use test accounts).
-3. Set threshold to **2 of 3**.
-4. Click **Configure Recovery** — the guardian policy is written and a recovery ID is stored locally.
-5. Create a recovery approval request for a replacement wallet, then collect and verify guardian signatures until the configured threshold is reached.
+NexusVault is a Vite SPA and includes `vercel.json` rewrites so deep links work
+correctly on Vercel.
 
-### Step 3 — Export social graph as DID document
+Recommended deployment path:
 
-1. Navigate to **Social Graph**.
-2. Add contacts with name, wallet address, and platform handles (Twitter, Farcaster, Lens).
-3. Click **Export Graph** — a W3C DID document is built and uploaded to IPFS via Storacha.
-4. Copy the CID or open the IPFS gateway link.
-5. Click **Preview DID Doc** to inspect the raw JSON.
+```bash
+npm run build
+vercel --prod
+```
 
-### Step 4 — Grant consent + delegate UCAN read access
+Current public deployment:
 
-1. Navigate to **Data Sharing**.
-2. Toggle **Shareable** on a vault entry using the consent switch.
-3. In **Delegation Manager** → **Grant New Delegation**, select the entry, paste a recipient DID (e.g. `did:key:z6Mk…`), choose an expiry, and click **Delegate**.
-4. Copy the base64 UCAN token from the code block — this is a bearer token for read access.
+- https://nexus-vaultx.vercel.app/
 
-### Step 5 — Configure and arm the dead man's switch
+## Submission Assets Checklist
 
-1. Navigate to **Dead Man's Switch**.
-2. Enter an heir wallet address, select a heartbeat interval (7/14/30 days).
-3. Ensure you have already saved at least one vault entry so the vault index exists.
-4. Click **Arm Switch** — the heartbeat policy is armed against your saved vault index.
-5. The status dashboard shows last heartbeat, next required check-in, and heir address.
-6. Click **Check In Now** to reset the heartbeat timer.
-7. Click **Evaluate Eligibility** to check whether the heartbeat window has expired.
+- [x] Working frontend prototype
+- [x] Public source repository
+- [x] README with setup, architecture, and demo flow
+- [x] Storacha integration proof
+- [x] Lit integration proof
+- [ ] Demo video (record separately)
 
----
+## Future Roadmap
 
-## Sponsor Integrations
+- Upgrade the agent mesh into a fully replayable decentralized memory timeline
+- Add richer knowledge indexing for decentralized RAG retrieval
+- Expand continuity policies into conditional asset release and DAO workflows
+- Add server-sponsored delegation flows for broader non-technical onboarding
 
-### Lit Protocol
+## References
 
-- **Wallet-gated encryption** (`encryptWithWallet`): AES-GCM key is sealed to the user's Ethereum address using Lit's threshold network. No single node ever holds the full key.
-- **Session signatures** (`getSessionSigs`): EIP-4361 (SIWE) session capabilities are generated via MetaMask for every decrypt operation. No `authSig` — fully v7-compliant.
-- **Social recovery** (`setupSocialRecovery`): A Lit Action enforces M-of-N guardian threshold before releasing the recovery key.
-- **Dead man's switch** (`deployDeadMansSwitchAction`): A Lit Action checks `block.timestamp` vs `lastHeartbeat + interval` and conditionally re-encrypts vault access to the heir.
-
-### Storacha (w3up / UCAN)
-
-- **Encrypted blob storage** (`uploadEncryptedBlob`): Lit ciphertexts are uploaded to IPFS via `@storacha/client`. The raw plaintext never leaves the browser.
-- **Vault index** (`uploadVaultIndex`): Entry metadata (CIDs, access hashes, consent flags) is serialised to a JSON index file pinned to IPFS. The CID is stored in Zustand and persisted locally.
-- **UCAN delegations** (`delegateReadAccess`): Time-limited `space/blob/*` read delegations are issued to recipient DIDs. Token is serialised via `@ucanto/core/delegation` and returned as a base64 string.
-
----
-
-## Project Scope
-
-A personal data layer that unifies encrypted file/credential storage, social recovery, a portable social graph, consent-based data sharing, and a cryptographic dead man's switch.
+- Storacha docs: https://docs.storacha.network/
+- Storacha AI quickstart: https://docs.storacha.network/ai/quickstart/
+- Storacha upload guide: https://docs.storacha.network/how-to/upload/
+- Lit Protocol docs: https://developer.litprotocol.com/
+- Lit SDK intro: https://developer.litprotocol.com/sdk/introduction
