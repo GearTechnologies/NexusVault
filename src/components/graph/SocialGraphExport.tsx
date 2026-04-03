@@ -147,8 +147,8 @@ export function SocialGraphExport() {
         </div>
         <div className="space-y-2">
           {PLATFORMS.map((p) => (
-            <div key={p} className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 w-20 capitalize">{p}</span>
+            <div key={p} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <span className="w-20 text-xs capitalize text-gray-400">{p}</span>
               <input
                 type="text"
                 value={platformHandles[p] ?? ''}
@@ -177,7 +177,10 @@ export function SocialGraphExport() {
         <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 space-y-3">
           <h4 className="text-sm font-medium text-gray-300">Contacts ({contacts.length})</h4>
           {contacts.map((c) => (
-            <div key={c.id} className="flex items-center justify-between bg-gray-900 rounded-lg p-3">
+            <div
+              key={c.id}
+              className="flex flex-col gap-3 rounded-lg bg-gray-900 p-3 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
                 <p className="text-sm font-medium text-gray-200">{c.name}</p>
                 {c.walletAddress && (
@@ -198,7 +201,7 @@ export function SocialGraphExport() {
               </div>
               <button
                 onClick={() => removeContact(c.id)}
-                className="text-red-400 hover:text-red-300 text-xs ml-4"
+                className="text-xs text-red-400 hover:text-red-300 sm:ml-4"
                 aria-label={`Remove contact ${c.name}`}
               >
                 Remove
@@ -209,7 +212,7 @@ export function SocialGraphExport() {
       )}
 
       {/* Export / import */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <button
           onClick={() => void handleExport()}
           disabled={contacts.length === 0}

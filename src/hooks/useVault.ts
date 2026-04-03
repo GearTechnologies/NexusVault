@@ -23,6 +23,22 @@ import {
 } from '../lib/storacha';
 import type { ContactEntry } from '../lib/did';
 
+function toVaultErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error) {
+    if (
+      /Unable to reach the Lit encryption network/i.test(error.message) ||
+      /Could not handshake with nodes/i.test(error.message) ||
+      /Failed to fetch/i.test(error.message)
+    ) {
+      return 'NexusVault could not reach the Lit encryption network. Please retry in a moment or switch to a less restricted network connection.';
+    }
+
+    return error.message;
+  }
+
+  return fallback;
+}
+
 /**
  * Provides vault operations: add, decrypt, delete entries, manage the vault
  * index on Storacha, toggle consent, and handle UCAN delegations.
@@ -89,7 +105,7 @@ export function useVault() {
         addEntry({ ...meta, id: uuidv4(), createdAt: Date.now(), consentEnabled: false, delegations: [] });
         await saveVaultIndex();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to add password entry');
+        setError(toVaultErrorMessage(err, 'Failed to add password entry'));
         throw err;
       } finally {
         setLoading(false);
@@ -115,7 +131,7 @@ export function useVault() {
         addEntry({ ...meta, id: uuidv4(), createdAt: Date.now(), consentEnabled: false, delegations: [] });
         await saveVaultIndex();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to add file entry');
+        setError(toVaultErrorMessage(err, 'Failed to add file entry'));
         throw err;
       } finally {
         setLoading(false);
@@ -135,7 +151,7 @@ export function useVault() {
         addEntry({ ...meta, id: uuidv4(), createdAt: Date.now(), consentEnabled: false, delegations: [] });
         await saveVaultIndex();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to add note entry');
+        setError(toVaultErrorMessage(err, 'Failed to add note entry'));
         throw err;
       } finally {
         setLoading(false);
@@ -159,7 +175,7 @@ export function useVault() {
         addEntry({ ...meta, id: uuidv4(), createdAt: Date.now(), consentEnabled: false, delegations: [] });
         await saveVaultIndex();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to add API key entry');
+        setError(toVaultErrorMessage(err, 'Failed to add API key entry'));
         throw err;
       } finally {
         setLoading(false);
@@ -207,7 +223,7 @@ export function useVault() {
           client
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to decrypt entry');
+        setError(toVaultErrorMessage(err, 'Failed to decrypt entry'));
         throw err;
       } finally {
         setLoading(false);
@@ -226,7 +242,7 @@ export function useVault() {
         removeEntry(id);
         await saveVaultIndex();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to delete entry');
+        setError(toVaultErrorMessage(err, 'Failed to delete entry'));
         throw err;
       } finally {
         setLoading(false);
@@ -252,7 +268,7 @@ export function useVault() {
           .forEach((e) => addEntry(e));
         setVaultIndexCid(cid);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load vault index');
+        setError(toVaultErrorMessage(err, 'Failed to load vault index'));
         throw err;
       } finally {
         setLoading(false);
@@ -271,7 +287,7 @@ export function useVault() {
         updateEntry(id, { consentEnabled: enabled });
         await saveVaultIndex();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to toggle consent');
+        setError(toVaultErrorMessage(err, 'Failed to toggle consent'));
         throw err;
       } finally {
         setLoading(false);
@@ -313,7 +329,7 @@ export function useVault() {
         await saveVaultIndex();
         return token;
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to delegate access');
+        setError(toVaultErrorMessage(err, 'Failed to delegate access'));
         throw err;
       } finally {
         setLoading(false);

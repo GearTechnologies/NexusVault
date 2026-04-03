@@ -191,7 +191,7 @@ export function RecoveryFlow() {
             <label className="block text-sm text-gray-400" htmlFor="guardian-signature">
               Guardian Signature
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 id="guardian-signature"
                 type="text"
@@ -206,7 +206,7 @@ export function RecoveryFlow() {
               />
               <button
                 onClick={() => void handleAddApproval()}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-3 py-2 text-sm transition-colors"
+                className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:self-start"
                 aria-label="Verify guardian signature"
               >
                 Verify
@@ -233,7 +233,7 @@ export function RecoveryFlow() {
             </ul>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <button
               onClick={clearRecoveryRequest}
               className="border border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white rounded-lg px-4 py-2 text-sm transition-colors"

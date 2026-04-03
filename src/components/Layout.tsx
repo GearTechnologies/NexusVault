@@ -23,20 +23,23 @@ export function Layout() {
   const { isConnected } = useWallet();
 
   return (
-    <div className="flex h-screen bg-gray-950 text-gray-50 overflow-hidden">
+    <div className="flex min-h-screen flex-col bg-gray-950 text-gray-50 md:h-screen md:flex-row md:overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 border-r border-gray-700 flex flex-col">
-        <div className="p-6 border-b border-gray-700">
+      <aside className="w-full shrink-0 border-b border-gray-700 bg-gray-900 md:w-64 md:border-b-0 md:border-r">
+        <div className="border-b border-gray-700 px-4 py-4 md:p-6">
           <h1 className="text-xl font-semibold text-indigo-400">NexusVault</h1>
-          <p className="text-xs text-gray-400 mt-1">Sovereign Data Layer</p>
+          <p className="mt-1 text-xs text-gray-400">Sovereign Data Layer</p>
         </div>
-        <nav className="flex-1 p-4 space-y-1" aria-label="Main navigation">
+        <nav
+          className="flex gap-2 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:space-y-1 md:px-4 md:py-4"
+          aria-label="Main navigation"
+        >
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                `flex min-w-max items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 md:w-full ${
                   isActive
                     ? 'bg-indigo-600 text-white font-medium'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800'
@@ -45,16 +48,16 @@ export function Layout() {
               aria-label={`Navigate to ${link.label}`}
             >
               <span aria-hidden="true">{link.icon}</span>
-              {link.label}
+              <span className="whitespace-nowrap">{link.label}</span>
             </NavLink>
           ))}
         </nav>
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 bg-gray-900 border-b border-gray-700 flex items-center justify-between px-6">
+        <header className="flex min-h-16 items-center justify-between border-b border-gray-700 bg-gray-900 px-4 py-3 md:px-6">
           <div />
           {isConnected && (
             <ConnectButton accountStatus="address" chainStatus="icon" showBalance={false} />
@@ -65,12 +68,12 @@ export function Layout() {
         {error && (
           <div
             role="alert"
-            className="mx-6 mt-4 p-4 bg-red-900/50 border border-red-700 rounded-lg flex items-center justify-between"
+            className="mx-4 mt-4 flex items-start justify-between rounded-lg border border-red-700 bg-red-900/50 p-4 md:mx-6"
           >
-            <span className="text-red-300 text-sm">{error}</span>
+            <span className="pr-3 text-sm text-red-300">{error}</span>
             <button
               onClick={() => setError(null)}
-              className="text-red-400 hover:text-red-200 ml-4"
+              className="ml-2 text-red-400 hover:text-red-200"
               aria-label="Dismiss error"
             >
               ✕
@@ -79,7 +82,7 @@ export function Layout() {
         )}
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>

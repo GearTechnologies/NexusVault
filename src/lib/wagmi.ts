@@ -11,13 +11,21 @@ const connectors: CreateConnectorFn[] = [
   injected({ shimDisconnect: true }),
 ];
 
+function createRpcProxyUrl(path: string) {
+  if (typeof window !== 'undefined') {
+    return new URL(path, window.location.origin).toString();
+  }
+
+  return path;
+}
+
 export const wagmiConfig = createConfig({
   chains,
   connectors,
   ssr: false,
   transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
+    [mainnet.id]: http(createRpcProxyUrl('/api/rpc/mainnet')),
+    [sepolia.id]: http(createRpcProxyUrl('/api/rpc/sepolia')),
   },
 });
 

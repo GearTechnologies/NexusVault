@@ -29,14 +29,14 @@ function DelegationRow({ entryLabel, entryId, record, onRevoke }: DelegationRowP
   };
 
   return (
-    <li className="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
+    <li className="flex flex-col gap-3 rounded-lg bg-gray-900 p-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-0.5 min-w-0">
         <p className="text-sm font-medium text-gray-200 truncate">{entryLabel}</p>
         <p className="text-xs text-gray-500 font-mono truncate">
           {record.recipientDid.substring(0, 20)}…
         </p>
       </div>
-      <div className="flex items-center gap-3 ml-3 shrink-0">
+      <div className="flex items-center gap-3 sm:ml-3 sm:shrink-0">
         <span
           className={`text-xs px-2 py-0.5 rounded ${
             expired

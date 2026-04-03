@@ -101,7 +101,7 @@ export function GuardianManager() {
         <label className="block text-sm text-gray-400" htmlFor="guardian-input">
           Add Guardian Address
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <input
             id="guardian-input"
             type="text"
@@ -116,7 +116,7 @@ export function GuardianManager() {
           />
           <button
             onClick={handleAddGuardian}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:self-start"
             aria-label="Add guardian"
           >
             Add

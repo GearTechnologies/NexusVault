@@ -29,12 +29,12 @@ function DecryptedModal({
 
   return (
     <div className="fixed inset-0 bg-gray-950/80 flex items-center justify-center z-50 p-4">
-      <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 w-full max-w-md space-y-4">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-700 bg-gray-800 p-5 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-50">Decrypted Value</h3>
         <pre className="bg-gray-900 rounded-lg p-4 text-sm text-gray-300 font-mono overflow-auto max-h-48 whitespace-pre-wrap break-all">
           {value}
         </pre>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleCopy}
             className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-4 py-2 transition-colors text-sm"
@@ -74,7 +74,7 @@ function DelegateModal({
 
   return (
     <div className="fixed inset-0 bg-gray-950/80 flex items-center justify-center z-50 p-4">
-      <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 w-full max-w-md space-y-4">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-gray-700 bg-gray-800 p-5 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-50">Delegate Access</h3>
         <div>
           <label className="block text-sm text-gray-400 mb-1" htmlFor="delegate-did">
@@ -115,7 +115,7 @@ function DelegateModal({
             </pre>
           </div>
         )}
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleDelegate}
             disabled={!did}
@@ -150,7 +150,7 @@ export function VaultEntryCard({ entry, onDelete }: VaultEntryCardProps) {
 
   return (
     <div className="rounded-xl border border-gray-700 bg-gray-800 p-6 space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <EntryTypeIcon type={entry.type} />
           <div>
@@ -172,7 +172,7 @@ export function VaultEntryCard({ entry, onDelete }: VaultEntryCardProps) {
       <p className="font-mono text-sm text-gray-500 tracking-widest">••••••••</p>
       <p className="text-xs text-gray-600">{new Date(entry.createdAt).toLocaleDateString()}</p>
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-wrap gap-2 pt-1">
         <button
           onClick={handleDecrypt}
           className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-3 py-1.5 text-xs transition-colors"

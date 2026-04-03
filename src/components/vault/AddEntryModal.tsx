@@ -59,7 +59,7 @@ export function AddEntryModal({ onClose }: AddEntryModalProps) {
 
   return (
     <div className="fixed inset-0 bg-gray-950/80 flex items-center justify-center z-50 p-4">
-      <div className="rounded-xl border border-gray-700 bg-gray-800 w-full max-w-lg space-y-4 p-6">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-700 bg-gray-800 p-5 sm:p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-50">Add Vault Entry</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close modal">
@@ -231,11 +231,11 @@ export function AddEntryModal({ onClose }: AddEntryModalProps) {
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
             <button
               type="submit"
               disabled={uploading}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
               aria-label="Save vault entry"
             >
               {uploading ? 'Saving…' : 'Save Entry'}
@@ -243,7 +243,7 @@ export function AddEntryModal({ onClose }: AddEntryModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="border border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white rounded-lg px-4 py-2 text-sm transition-colors"
+              className="rounded-lg border border-gray-600 px-4 py-2 text-sm text-gray-300 transition-colors hover:border-gray-400 hover:text-white"
               aria-label="Cancel"
             >
               Cancel

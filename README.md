@@ -1,298 +1,391 @@
 # NexusVault
 
-NexusVault is a sovereign collaboration vault for humans and autonomous agents.
-It combines Lit-enforced encryption and policy logic with Storacha-backed
-persistent memory, UCAN delegation, portable trust graphs, social recovery, and
-continuity automation.
+NexusVault is a wallet-first sovereign vault for humans and AI agents. It combines Lit-enforced encryption, Storacha-backed persistence, guarded handoffs, recovery orchestration, and continuity automation in one deployable command deck.
 
-This submission is designed for the PL Genesis: Frontier of Collaboration
-Hackathon 2026, with explicit alignment to the Storacha and Lit Protocol tracks.
+Live app: https://nexus-vaultx.vercel.app/
+Repository: https://github.com/GearTechnologies/NexusVault
 
-Live deployment: https://nexus-vaultx.vercel.app/
-GitHub repository: https://github.com/GearTechnologies/NexusVault
+## What it does
 
-## Why NexusVault
+NexusVault protects high-value secrets and collaboration state while making that state portable across devices and operator contexts.
 
-Most agent products are stateless, brittle, and custodial:
+The app is organized into five surfaces:
 
-- restart the app and context disappears
-- switch devices and preferences vanish
-- collaborate with other agents and sharing becomes ad hoc
-- lose a wallet and the whole system becomes inaccessible
-- grant access and it is often all-or-nothing instead of policy-based
+- `Dashboard`: readiness score, publish/restore controls, demo dataset, steward status
+- `Vault`: encrypted passwords, files, notes, and API keys
+- `Memory`: persistent knowledge chunks and memory packs published to Storacha
+- `Handoffs`: collaborators, agent roster, task queue, delegations, audit trail
+- `Recovery`: guardian quorum, Lit policy checks, continuity heartbeat, steward action
 
-NexusVault fixes that by treating encrypted memory, coordination state, and
-continuity rules as first-class primitives.
+## Problem
 
-## Track Alignment
+Modern agent systems are usually weak in one or more of these areas:
 
-### Storacha Track Alignment
+- they forget state when a session ends
+- they rely on centralized storage and mutable trust assumptions
+- they share data poorly across agents and collaborators
+- they lack recovery and continuity when wallets or operators disappear
+- they treat security and usability as separate products
 
-NexusVault directly maps to three Storacha challenge themes:
+NexusVault addresses that by treating encrypted memory, publishable manifests, recovery bundles, and agent handoffs as one integrated system.
+
+## Hackathon Track Alignment
+
+### Storacha
+
+NexusVault maps directly to three Storacha challenge themes:
 
 1. Persistent Agent Memory
-
-- Agent profiles, knowledge packs, vault indexes, and workspace manifests are
-  published to Storacha.
-- The coordination state is content-addressed, portable, and reconstructable on
-  any device.
+- Vault metadata, memory packs, audit records, and workspace manifests are published to Storacha.
+- A wallet owner can publish a workspace head and later restore it from a different session.
 
 2. Multi-Agent Coordination
+- The Handoffs surface manages agent identities, shared tasks, delegations, and audit events.
+- UCAN-based delegation is used for controlled handoffs of shareable vault items.
 
-- NexusVault includes an agent registry, shared task queue, activity feed, and
-  UCAN-based delegation controls.
-- Agent A can prepare memory, Agent B can receive delegated access, and both can
-  operate from the same Storacha-backed coordination snapshot.
+3. Decentralized Knowledge Base
+- Vault items can be promoted into knowledge chunks and memory packs.
+- These artifacts are published as content-addressed Storacha payloads for durable retrieval.
 
-3. Decentralized RAG Knowledge Base
+### Lit Protocol
 
-- Encrypted vault entries can be promoted into reusable knowledge packs.
-- Public manifests and content-addressed CIDs make the knowledge layer durable
-  and verifiable.
+NexusVault’s primary Lit proof is the Lit Protocol v1-style encrypted and programmable policy flow:
 
-### Lit Protocol Track Alignment
+1. Lit-enforced encryption
+- Vault payloads are encrypted client-side before leaving the browser.
+- Decryption requires an authenticated wallet-backed Lit session.
 
-NexusVault uses Lit for decentralized cryptographic control across the product:
+2. Lit Actions for policy evaluation
+- The app runs Lit policy actions for:
+  - `share_item`
+  - `publish_memory_snapshot`
+  - `evaluate_continuity`
+  - `verify_recovery_threshold`
 
-1. Encrypted data access
+3. Recovery and continuity
+- Guardian approvals are collected and verified.
+- Continuity state is evaluated against a heartbeat policy.
+- Recovery and continuity checks are logged into the workspace audit trail.
 
-- Vault payloads are encrypted client-side and only decryptable through Lit
-  access control conditions tied to the authorized wallet.
+### Vincent / Steward Surface
 
-2. Programmable policy execution
+The project includes an env-gated steward surface and API routes for production wallet-automation flows:
 
-- Lit Actions are used for social recovery orchestration and a resilience policy
-  simulation that scores operational readiness before handoff.
+- `GET /api/vincent/status`
+- `POST /api/vincent/action`
 
-3. Key continuity and automation
+When Vincent credentials and steward env vars are configured, the Recovery surface exposes a guarded snapshot action for a steward agent wallet. If those vars are absent, the UI degrades safely instead of breaking the app.
 
-- Guardian thresholds and the dead man’s switch create programmable, policy-led
-  continuity around high-value secrets and collaboration state.
+## Why this can score well
 
-## Core Product Capabilities
+### Technical Execution
 
-- Encrypted Vault
-  Store passwords, notes, files, and API keys with Lit-enforced decryption.
-- Storacha Memory Mesh
-  Publish workspace manifests, vault indexes, and social graph state to
-  Storacha.
-- UCAN Delegation
-  Mark assets as shareable and issue time-bound delegations to downstream DIDs.
-- Agent Coordination Board
-  Register agent identities, queue tasks, publish knowledge packs, and track
-  activity in one place.
-- Social Recovery
-  Configure a guardian quorum and verify recovery approvals.
-- Trust Graph Export
-  Export collaborators as a DID-linked social graph.
-- Dead Man’s Switch
-  Arm heartbeat-based continuity logic for inheritance or failover.
-- Crash Containment + Safer Deploy
-  Error boundary protection, SPA rewrites for Vercel, and lazy route loading.
+- Client-side Lit encryption before decentralized storage
+- Explicit Storacha browser space bootstrap and publish/restore workflow
+- Vercel API routes for workspace head, restore, health, steward status, and continuity cron
+- Persisted versioned workspace store with migration from the previous app state
+- Code-split runtime so Lit and Storacha ship as lazy chunks rather than on first paint
+- Unit-tested continuity, recovery, env validation, and workspace serialization logic
+
+### Impact / Usefulness
+
+- Useful for individuals protecting sensitive credentials and personal digital continuity
+- Useful for teams or agent operators who need portable memory and shared task state
+- Reduces lock-in by keeping the durable layer decentralized and content-addressed
+
+### Completeness / Functionality
+
+- Working frontend with five real surfaces
+- Working vault CRUD, encryption, decryption, consent, delegation, and memory-pack promotion
+- Working workspace publish and restore path
+- Working recovery and continuity dashboards
+- Working health, steward-status, and cron endpoints
+
+### Scalability / Future Potential
+
+- Workspace head is mutable while manifests are immutable
+- Knowledge packs can grow into larger decentralized RAG catalogs
+- Handoff tasks and agent identities can scale into broader agent-orchestration systems
+- Vercel-managed mutable state is supported through KV, with Blob or in-memory fallback paths when KV is not attached, while Storacha remains the source of truth for immutable artifacts
+
+### Innovation / Creativity
+
+- Blends vault security, decentralized memory, continuity, and agent handoffs into one workflow
+- Connects Lit policy logic with Storacha persistence rather than treating them as separate demos
+- Turns recovery and continuity into part of collaboration infrastructure
 
 ## Architecture
 
 ```text
-┌────────────────────────────────────────────────────────────────────┐
-│                            Browser UI                             │
-│                 React 18 + Vite + Zustand + Tailwind             │
-├────────────────────────────────────────────────────────────────────┤
-│ Command Center │ Coordination Mesh │ Vault │ Sharing │ Recovery  │
-├────────────────────────────────────────────────────────────────────┤
-│ Lit Protocol                                                   │
-│ - access-controlled encryption                                 │
-│ - session-based decryption                                     │
-│ - Lit Action policy execution                                  │
-│ - guardian / continuity logic                                  │
-├────────────────────────────────────────────────────────────────────┤
-│ Storacha                                                       │
-│ - encrypted blob uploads                                       │
-│ - vault index persistence                                      │
-│ - workspace manifest publishing                                │
-│ - UCAN delegation                                              │
-├────────────────────────────────────────────────────────────────────┤
-│ Wallet Layer                                                   │
-│ - RainbowKit + wagmi                                           │
-│ - signer-backed Lit sessions                                   │
-│ - DID-linked operator identity                                 │
-└────────────────────────────────────────────────────────────────────┘
+Browser UI
+  React 18 + Vite + Zustand + React Router + RainbowKit/Wagmi
+
+Secure Runtime
+  Lit encryption + Lit session decryption + Lit Action policy calls
+
+Persistence Layer
+  Storacha browser client for encrypted blobs and manifests
+  Vercel KV preferred for mutable workspace head and steward status
+  Vercel Blob fallback for deployments that have Blob attached before KV
+
+Operational APIs
+  /api/workspace/publish
+  /api/workspace/head
+  /api/workspace/restore
+  /api/vincent/status
+  /api/vincent/action
+  /api/health
+  /api/cron/continuity
 ```
 
-## What Makes This Competitive
+## Public Interfaces
 
-### Technical Execution
+### `POST /api/workspace/publish`
 
-- Client-side encryption before decentralized storage
-- Route-level lazy loading to avoid shipping every flow on first paint
-- Dedicated coordination model for agents, tasks, knowledge packs, and manifests
-- Unified state model with persisted migrations
-- Vercel SPA rewrite support so nested routes do not break on refresh
-- Error boundary to prevent whole-app failure during demos
+Input:
 
-### Impact / Usefulness
-
-- Useful for individuals, families, and teams managing sensitive digital assets
-- Gives AI agents durable memory without central backend lock-in
-- Enables safer collaboration through selective, time-bound delegation
-- Solves continuity problems around wallet loss, operator absence, and recovery
-
-### Completeness / Functionality
-
-- Deployed frontend
-- End-to-end flows for encrypt, decrypt, delegate, recover, export, publish
-- Hackathon demo path built directly into the Command Center and Coordination UI
-
-### Scalability / Future Potential
-
-- Content-addressed manifests can grow into multi-device sync and long-lived
-  memory replay
-- Knowledge packs can evolve into a fully decentralized RAG layer
-- Task queue + agent registry can back larger multi-agent orchestration systems
-
-### Innovation / Creativity
-
-- Blends vault security, inheritance, trust graphs, and agent memory into one
-  product
-- Treats continuity as part of collaboration, not a separate “backup” feature
-- Uses Storacha and Lit together as infrastructure for resilient coordination
-
-## Demo Walkthrough
-
-Recommended judge flow:
-
-1. Connect a wallet.
-2. Click `Load Demo Workspace` on the Command Center.
-3. Open `Coordination` and inspect:
-   agent registry, shared tasks, knowledge packs, and Lit policy scoring.
-4. Open `Vault` and add an encrypted secret.
-5. Open `UCAN Sharing` and mark the secret shareable.
-6. Issue a delegation to a recipient DID.
-7. Return to `Coordination` and publish a Storacha snapshot.
-8. Open `Recovery` and configure guardians.
-9. Open `Continuity` and arm the dead man’s switch.
-10. Open `Trust Graph` and export the social graph manifest.
-
-## Repository Structure
-
-```text
-src/
-  components/
-    coordination/     # agent registry, tasks, knowledge publishing
-    deadmans/         # heartbeat continuity controls
-    graph/            # trust graph export/import
-    recovery/         # guardian setup + recovery approvals
-    sharing/          # consent toggles + UCAN delegation UI
-    vault/            # encrypted asset creation and viewing
-  hooks/
-    useVault.ts       # encrypted vault CRUD and Storacha/Lit flows
-    useWorkspace.ts   # agent coordination, policy scoring, manifest publishing
-  lib/
-    lit.ts            # Lit client, sessions, encryption, Lit Actions
-    storacha.ts       # Storacha client, space readiness, upload, delegation
-    did.ts            # DID document export/import helpers
-  store/
-    vault.ts          # persisted app state
-  types/
-    nexus.ts          # shared types for agents, tasks, knowledge packs
+```json
+{
+  "walletAddress": "0x...",
+  "workspaceDraft": {
+    "manifest": {},
+    "manifestCid": "bafy...",
+    "auditCid": "bafy...",
+    "continuityCid": "bafy...",
+    "publishedAt": 1712100000000
+  },
+  "clientSignature": "0x..."
+}
 ```
 
-## Environment Variables
+Output:
 
-Copy `.env.example` to `.env` and fill in the values you want to use:
-
-```bash
-cp .env.example .env
+```json
+{
+  "headCid": "bafy...",
+  "manifestCid": "bafy...",
+  "auditCid": "bafy...",
+  "updatedAt": 1712100000000
+}
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `VITE_LIT_NETWORK` | Lit network name. The current browser demo defaults to `datil-test`. |
-| `VITE_STORACHA_EMAIL` | Email used for the Storacha browser login flow. |
-| `VITE_STORACHA_APP_NAME` | App name shown during Storacha auth. |
-| `VITE_STORACHA_SPACE_NAME` | Auto-created Storacha space name when no active space exists. |
-| `VITE_STORACHA_SPACE_DID` | Optional explicit space DID to use instead of auto-selection. |
-| `VITE_STORACHA_AUTO_CREATE_SPACE` | Set to `false` if you want to manage spaces manually. |
-| `VITE_HEARTBEAT_INTERVAL_DAYS` | Default continuity interval for the dead man’s switch. |
-| `LIT_API_KEY` | Reserved for extended Lit integrations and hosted flows. |
+### `GET /api/workspace/head?wallet=0x...`
+
+Output:
+
+```json
+{
+  "headCid": "bafy...",
+  "manifestCid": "bafy...",
+  "auditCid": "bafy...",
+  "updatedAt": 1712100000000
+}
+```
+
+### `POST /api/workspace/restore`
+
+Input:
+
+```json
+{
+  "headCid": "bafy..."
+}
+```
+
+Output:
+
+```json
+{
+  "workspace": {},
+  "headCid": "bafy..."
+}
+```
+
+### `GET /api/vincent/status?wallet=0x...`
+
+Output:
+
+```json
+{
+  "enabled": true,
+  "installed": true,
+  "agentWalletAddress": "0x...",
+  "abilities": ["publish_snapshot"],
+  "latestReceiptId": "vincent-..."
+}
+```
+
+### `POST /api/vincent/action`
+
+Input:
+
+```json
+{
+  "walletAddress": "0x...",
+  "action": "publish_snapshot",
+  "payload": {
+    "headCid": "bafy...",
+    "manifestCid": "bafy..."
+  }
+}
+```
+
+Output:
+
+```json
+{
+  "receiptId": "vincent-...",
+  "auditEvent": {
+    "status": "success",
+    "summary": "Vincent steward published a guarded workspace snapshot."
+  }
+}
+```
+
+### `GET /api/health`
+
+Output:
+
+```json
+{
+  "ok": true,
+  "storacha": "configured",
+  "lit": "client-runtime",
+  "vincent": "configured",
+  "kv": "configured"
+}
+```
 
 ## Local Development
 
-Install dependencies:
+### Requirements
+
+- Node.js 20+ recommended
+- npm 10+ recommended
+- an EVM wallet extension for live encryption/decryption flows
+
+### Install
 
 ```bash
 npm install
 ```
 
-Start the app:
+### Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Browser/runtime vars:
+
+- `VITE_LIT_NETWORK`
+- `VITE_LIT_PKP_PUBLIC_KEY`
+- `VITE_LIT_PERMITTED_ACTIONS`
+- `VITE_LIT_PERMITTED_ADDRESSES`
+- `VITE_STORACHA_EMAIL`
+- `VITE_STORACHA_APP_NAME`
+- `VITE_STORACHA_SPACE_NAME`
+- `VITE_STORACHA_SPACE_DID`
+- `VITE_STORACHA_AUTO_CREATE_SPACE`
+- `VITE_STORACHA_GATEWAY_BASE`
+- `VITE_HEARTBEAT_INTERVAL_DAYS`
+- `VITE_VINCENT_ENABLED`
+
+Server/runtime vars:
+
+- `LIT_API_KEY`
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
+- `BLOB_READ_WRITE_TOKEN`
+- `STORACHA_AGENT_KEY`
+- `STORACHA_AGENT_PROOF`
+- `STORACHA_SPACE_DID`
+- `STORACHA_GATEWAY_BASE`
+- `VINCENT_API_KEY`
+- `VINCENT_AGENT_WALLET_ADDRESS`
+
+### Run
 
 ```bash
 npm run dev
 ```
 
-Typecheck:
+### Test
+
+```bash
+npm run test
+```
+
+### Typecheck
 
 ```bash
 npm run typecheck
 ```
 
-Build for production:
+### Full verification
 
 ```bash
-npm run build
+npm run check
 ```
-
-## Storacha Notes
-
-- Storacha is public, so NexusVault only uploads encrypted vault payloads or
-  non-secret coordination manifests.
-- On first use, the browser client may trigger the Storacha email login flow.
-- If no active space is selected, NexusVault can automatically create one using
-  `VITE_STORACHA_SPACE_NAME`.
-
-## Security Model
-
-- Secrets are encrypted before upload.
-- Decryption requires a Lit session generated from the connected wallet.
-- Delegations are time-bound and scoped through UCANs.
-- Recovery requires guardian approvals.
-- Continuity logic is separated from raw ciphertext storage.
 
 ## Deployment
 
-NexusVault is a Vite SPA and includes `vercel.json` rewrites so deep links work
-correctly on Vercel.
+The frontend is deployed on Vercel and linked to:
 
-Recommended deployment path:
+- project: `kiwi-protocols-projects/nexus-vault`
+- production alias: `https://nexus-vaultx.vercel.app`
 
-```bash
-npm run build
-vercel --prod
-```
+Deployment files included in this repo:
 
-Current public deployment:
+- `vercel.json` with security headers, SPA rewrite, and continuity cron
+- `.github/workflows/ci.yml` for install, test, typecheck, and build
+- `.env.example` for browser and server config
 
-- https://nexus-vaultx.vercel.app/
+Recommended release flow:
 
-## Submission Assets Checklist
+1. `npm run check`
+2. `vercel pull --yes`
+3. `vercel deploy`
+4. validate preview
+5. `vercel deploy --prod`
 
-- [x] Working frontend prototype
-- [x] Public source repository
-- [x] README with setup, architecture, and demo flow
-- [x] Storacha integration proof
-- [x] Lit integration proof
-- [ ] Demo video (record separately)
+## Demo Flow
 
-## Future Roadmap
+Suggested 2-5 minute demo:
 
-- Upgrade the agent mesh into a fully replayable decentralized memory timeline
-- Add richer knowledge indexing for decentralized RAG retrieval
-- Expand continuity policies into conditional asset release and DAO workflows
-- Add server-sponsored delegation flows for broader non-technical onboarding
+1. Connect wallet.
+2. Click `Load Demo Dataset`.
+3. Open `Vault` and show encrypted records.
+4. Decrypt one item live with Lit.
+5. Mark an item shareable and delegate it.
+6. Promote an item to a memory pack on `Memory`.
+7. Publish the workspace head from `Dashboard`.
+8. Open `Handoffs` and show agents, tasks, and audit trail.
+9. Open `Recovery` and show guardian quorum plus continuity evaluation.
+10. Trigger the steward snapshot action if Vincent env vars are configured.
+
+## Tests Included
+
+Unit tests cover:
+
+- continuity expiry evaluation
+- recovery message construction
+- guardian threshold validation
+- env validation warnings
+- public workspace manifest generation
+- readiness scoring
+
+## Current Notes
+
+- The app degrades safely when server-side Storacha or steward credentials are not configured.
+- Workspace publish/restore still works in browser-assisted mode, with local fallback for the mutable head if the API is unavailable.
+- The heaviest SDKs are lazy-loaded to keep the first route interactive faster during demos.
 
 ## References
 
-- Storacha docs: https://docs.storacha.network/
-- Storacha AI quickstart: https://docs.storacha.network/ai/quickstart/
+- Storacha quickstart: https://docs.storacha.network/quickstart/
 - Storacha upload guide: https://docs.storacha.network/how-to/upload/
-- Lit Protocol docs: https://developer.litprotocol.com/
-- Lit SDK intro: https://developer.litprotocol.com/sdk/introduction
+- Storacha retrieve guide: https://docs.storacha.network/how-to/retrieve/
+- Lit documentation: https://developer.litprotocol.com/
+- Lit Naga documentation: https://naga.developer.litprotocol.com/
+- Vincent docs: https://docs.heyvincent.ai/

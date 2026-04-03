@@ -16,11 +16,11 @@ export function VaultPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-semibold text-gray-50">Vault</h2>
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
+          className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:w-auto"
           aria-label="Add new vault entry"
         >
           + Add Entry
@@ -28,11 +28,11 @@ export function VaultPage() {
       </div>
 
       {entries.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-700 p-12 text-center">
+        <div className="rounded-xl border border-dashed border-gray-700 p-8 text-center sm:p-12">
           <p className="text-gray-500 mb-4">Your vault is empty.</p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
+            className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:w-auto"
             aria-label="Add first vault entry"
           >
             Add your first secret

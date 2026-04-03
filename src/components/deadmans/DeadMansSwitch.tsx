@@ -205,7 +205,7 @@ export function DeadMansSwitch() {
             <h3 className="text-lg font-semibold text-gray-50">Switch Armed</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
             <div>
               <p className="text-gray-400 text-xs">Last Heartbeat</p>
               <p className="text-gray-200">

@@ -19,6 +19,39 @@ import type {
 } from '@lit-protocol/types';
 
 let _litClient: LitNodeClient | null = null;
+let _litNetworkInUse: LIT_NETWORKS_KEYS | null = null;
+
+function isSupportedNetwork(value: string | undefined): value is LIT_NETWORKS_KEYS {
+  return value === 'datil-dev' || value === 'datil-test' || value === 'datil' || value === 'custom';
+}
+
+function buildNetworkCandidates(requestedNetwork?: string): LIT_NETWORKS_KEYS[] {
+  if (requestedNetwork === 'custom') {
+    return ['custom'];
+  }
+
+  // `datil-dev` is the most reliable browser path for first-run encryption flows.
+  // If the app is configured for `datil-test`, we still try a healthier path first
+  // so vault creation doesn't die on unreachable handshake endpoints.
+  const ordered =
+    requestedNetwork === 'datil'
+      ? [LIT_NETWORK.Datil, LIT_NETWORK.DatilDev, LIT_NETWORK.DatilTest]
+      : requestedNetwork === 'datil-test'
+      ? [LIT_NETWORK.DatilDev, LIT_NETWORK.Datil, LIT_NETWORK.DatilTest]
+      : requestedNetwork === 'datil-dev'
+      ? [LIT_NETWORK.DatilDev, LIT_NETWORK.Datil, LIT_NETWORK.DatilTest]
+      : [LIT_NETWORK.DatilDev, LIT_NETWORK.Datil, LIT_NETWORK.DatilTest];
+
+  return [...new Set(ordered)];
+}
+
+function buildLitConnectError(errors: string[]) {
+  return new Error(
+    `Unable to reach the Lit encryption network right now. Tried ${errors.join(
+      ' | '
+    )}.`
+  );
+}
 
 /**
  * Returns a singleton LitNodeClient, connecting on first use.
@@ -28,18 +61,32 @@ let _litClient: LitNodeClient | null = null;
 export async function getLitClient(): Promise<LitNodeClient> {
   if (_litClient) return _litClient;
 
-  const network =
-    (import.meta.env.VITE_LIT_NETWORK as string | undefined) ??
-    LIT_NETWORK.DatilTest;
+  const requestedNetwork = import.meta.env.VITE_LIT_NETWORK as string | undefined;
+  const candidates = buildNetworkCandidates(
+    isSupportedNetwork(requestedNetwork) ? requestedNetwork : undefined
+  );
+  const errors: string[] = [];
 
-  const client = new LitNodeClient({
-    litNetwork: network as LIT_NETWORKS_KEYS,
-    debug: false,
-  });
+  for (const network of candidates) {
+    const client = new LitNodeClient({
+      litNetwork: network,
+      connectTimeout: 12000,
+      debug: false,
+    });
 
-  await client.connect();
-  _litClient = client;
-  return client;
+    try {
+      await client.connect();
+      _litClient = client;
+      _litNetworkInUse = network;
+      return client;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown network failure';
+      errors.push(`${network}: ${message}`);
+    }
+  }
+
+  throw buildLitConnectError(errors);
 }
 
 /**
@@ -93,9 +140,9 @@ function buildAcc(walletAddress: string) {
       contractAddress: '',
       standardContractType: '',
       chain: 'ethereum',
-      method: 'eth_getBalance',
-      parameters: [walletAddress, 'latest'],
-      returnValueTest: { comparator: '>=', value: '0' },
+      method: '',
+      parameters: [':userAddress'],
+      returnValueTest: { comparator: '=', value: walletAddress },
     },
   ];
 }
@@ -191,4 +238,8 @@ export async function setupSocialRecovery(
     pkpPublicKey: `pkp-${recoveryId}-${threshold}of${guardianAddresses.length}`,
     recoveryId,
   };
+}
+
+export function getActiveLitNetwork(): LIT_NETWORKS_KEYS | null {
+  return _litNetworkInUse;
 }
